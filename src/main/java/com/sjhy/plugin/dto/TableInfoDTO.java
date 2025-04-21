@@ -45,6 +45,7 @@ public class TableInfoDTO {
         this.comment = DocCommentUtils.getComment(psiClass.getDocComment());
         this.templateGroupName = "";
         this.savePackageName = "";
+        this.childPackageName = "";
         this.savePath = "";
         this.saveModelName = "";
         this.fullColumn = new ArrayList<>();
@@ -59,6 +60,7 @@ public class TableInfoDTO {
         this.comment = dbTable.getComment();
         this.templateGroupName = "";
         this.savePackageName = "";
+        this.childPackageName = "";
         this.savePath = "";
         this.saveModelName = "";
         this.fullColumn = new ArrayList<>();
@@ -81,6 +83,9 @@ public class TableInfoDTO {
         }
         if (!StringUtils.isEmpty(oldData.getSavePackageName())) {
             newData.savePackageName = oldData.getSavePackageName();
+        }
+        if (!StringUtils.isEmpty(oldData.getChildPackageName())) {
+            newData.childPackageName = oldData.getChildPackageName();
         }
         if (!StringUtils.isEmpty(oldData.getSavePath())) {
             newData.savePath = oldData.getSavePath();
@@ -187,6 +192,10 @@ public class TableInfoDTO {
      * 保存的model名称
      */
     private String saveModelName;
+    /**
+     * 子包名
+     */
+    private String childPackageName;
 
     public TableInfo toTableInfo(PsiClass psiClass) {
         TableInfo tableInfo = new TableInfo();
@@ -195,6 +204,7 @@ public class TableInfoDTO {
         tableInfo.setPreName(this.getPreName());
         tableInfo.setTemplateGroupName(this.getTemplateGroupName());
         tableInfo.setSavePackageName(this.getSavePackageName());
+        tableInfo.setChildPackageName(this.getChildPackageName());
         tableInfo.setSavePath(this.getSavePath());
         tableInfo.setComment(this.getComment());
         tableInfo.setSaveModelName(this.getSaveModelName());
@@ -229,6 +239,7 @@ public class TableInfoDTO {
         tableInfo.setPreName(this.getPreName());
         tableInfo.setTemplateGroupName(this.getTemplateGroupName());
         tableInfo.setSavePackageName(this.getSavePackageName());
+        tableInfo.setChildPackageName(this.getChildPackageName());
         tableInfo.setSavePath(this.getSavePath());
         tableInfo.setComment(this.getComment());
         tableInfo.setSaveModelName(this.getSaveModelName());
@@ -270,6 +281,7 @@ public class TableInfoDTO {
         dto.setPreName(tableInfo.getPreName());
         dto.setComment(tableInfo.getComment());
         dto.setSavePackageName(tableInfo.getSavePackageName());
+        dto.setChildPackageName(tableInfo.getChildPackageName());
         dto.setSaveModelName(tableInfo.getSaveModelName());
         dto.setFullColumn(new ArrayList<>());
         // 处理列

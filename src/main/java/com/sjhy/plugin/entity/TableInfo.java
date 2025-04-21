@@ -38,6 +38,10 @@ public class TableInfo {
      */
     private String preName;
     /**
+     * 子包名
+     */
+    private String childPackageName;
+    /**
      * 注释
      */
     private String comment;

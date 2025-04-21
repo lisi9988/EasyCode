@@ -96,6 +96,7 @@ public class CodeGenerateServiceImpl implements CodeGenerateService {
                 tableInfo.setSavePackageName(finalSelectedTableInfo.getSavePackageName());
                 tableInfo.setSavePath(finalSelectedTableInfo.getSavePath());
                 tableInfo.setPreName(finalSelectedTableInfo.getPreName());
+                tableInfo.setChildPackageName(finalSelectedTableInfo.getChildPackageName());
                 tableInfoService.saveTableInfo(tableInfo);
             }
         });
@@ -106,6 +107,7 @@ public class CodeGenerateServiceImpl implements CodeGenerateService {
                 tableInfo.setSavePackageName(finalSelectedTableInfo.getSavePackageName());
                 tableInfo.setSavePath(finalSelectedTableInfo.getSavePath());
                 tableInfo.setPreName(finalSelectedTableInfo.getPreName());
+                tableInfo.setChildPackageName(finalSelectedTableInfo.getChildPackageName());
             });
         }
 
@@ -225,7 +227,7 @@ public class CodeGenerateServiceImpl implements CodeGenerateService {
         Map<String, Object> param = new HashMap<>(20);
         // 作者
         param.put("author", settings.getAuthor());
-        //工具类
+        // 工具类
         param.put("tool", GlobalTool.getInstance());
         param.put("time", TimeUtils.getInstance());
         // 项目路径

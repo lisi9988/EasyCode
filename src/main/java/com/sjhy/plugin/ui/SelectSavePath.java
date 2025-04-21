@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.impl.file.PsiPackageImpl;
 import com.intellij.util.ExceptionUtil;
 import com.sjhy.plugin.constants.StrState;
 import com.sjhy.plugin.dict.GlobalDict;
@@ -63,6 +64,14 @@ public class SelectSavePath extends DialogWrapper {
      * 前缀字段
      */
     private JTextField preField;
+    /**
+     * 前缀字段
+     */
+    private JTextField childPackageField;
+    /**
+     * 包选择按钮
+     */
+    private JButton childPackageChooseButton;
     /**
      * 包选择按钮
      */
@@ -158,12 +167,12 @@ public class SelectSavePath extends DialogWrapper {
         this.initEvent();
         init();
         setTitle(GlobalDict.TITLE_INFO);
-        //初始化路径
+        // 初始化路径
         refreshPath();
     }
 
     private void initEvent() {
-        //监听module选择事件
+        // 监听module选择事件
         moduleComboBox.addActionListener(e -> {
             // 刷新路径
             refreshPath();
@@ -171,7 +180,7 @@ public class SelectSavePath extends DialogWrapper {
 
         try {
             Class<?> cls = Class.forName("com.intellij.ide.util.PackageChooserDialog");
-            //添加包选择事件
+            // 添加包选择事件
             packageChooseButton.addActionListener(e -> {
                 try {
                     Constructor<?> constructor = cls.getConstructor(String.class, Project.class);
@@ -189,7 +198,8 @@ public class SelectSavePath extends DialogWrapper {
                         // 刷新路径
                         refreshPath();
                     }
-                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e1) {
+                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
+                         InvocationTargetException e1) {
                     ExceptionUtil.rethrow(e1);
                 }
             });
@@ -202,15 +212,47 @@ public class SelectSavePath extends DialogWrapper {
                     refreshPath();
                 }
             });
+
+            childPackageChooseButton.addActionListener(e -> {
+                try {
+                    Constructor<?> constructor = cls.getConstructor(String.class, Project.class);
+                    Object dialog = constructor.newInstance("Package Chooser", project);
+                    // 显示窗口
+                    Method showMethod = cls.getMethod("show");
+                    showMethod.invoke(dialog);
+                    // 获取选中的包名
+                    Method getSelectedPackageMethod = cls.getMethod("getSelectedPackage");
+                    Object psiPackage = getSelectedPackageMethod.invoke(dialog);
+                    if (psiPackage != null) {
+                        childPackageField.setText(((PsiPackageImpl) psiPackage).getName());
+                        // 刷新路径
+                        refreshPath();
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
+                         InvocationTargetException e1) {
+                    ExceptionUtil.rethrow(e1);
+                }
+            });
+            // 添加包编辑框失去焦点事件
+            childPackageField.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    // 刷新路径
+                    refreshPath();
+                }
+            });
         } catch (ClassNotFoundException e) {
             // 没有PackageChooserDialog，并非支持Java的IDE，禁用相关UI组件
             packageField.setEnabled(false);
             packageChooseButton.setEnabled(false);
+
+            childPackageField.setEnabled(false);
+            childPackageChooseButton.setEnabled(false);
         }
 
-        //选择路径
+        // 选择路径
         pathChooseButton.addActionListener(e -> {
-            //将当前选中的model设置为基础路径
+            // 将当前选中的model设置为基础路径
             VirtualFile path = ProjectUtils.getBaseDir(project);
             Module module = getSelectModule();
             if (module != null) {
@@ -226,7 +268,7 @@ public class SelectSavePath extends DialogWrapper {
     private void refreshData() {
         // 获取选中的表信息（鼠标右键的那张表），并提示未知类型
         TableInfo tableInfo;
-        if(entityMode) {
+        if (entityMode) {
             tableInfo = tableInfoService.getTableInfo(cacheDataUtils.getSelectPsiClass());
         } else {
             tableInfo = tableInfoService.getTableInfo(cacheDataUtils.getSelectDbTable());
@@ -241,6 +283,9 @@ public class SelectSavePath extends DialogWrapper {
         }
         if (!StringUtils.isEmpty(tableInfo.getPreName())) {
             preField.setText(tableInfo.getPreName());
+        }
+        if (!StringUtils.isEmpty(tableInfo.getPreName())) {
+            childPackageField.setText(tableInfo.getChildPackageName());
         }
         SettingsStorageDTO settings = SettingsStorageService.getSettingsStorage();
         String groupName = settings.getCurrTemplateGroupName();
@@ -297,7 +342,7 @@ public class SelectSavePath extends DialogWrapper {
         }
         // 保存配置
         TableInfo tableInfo;
-        if(!entityMode) {
+        if (!entityMode) {
             tableInfo = tableInfoService.getTableInfo(cacheDataUtils.getSelectDbTable());
         } else {
             tableInfo = tableInfoService.getTableInfo(cacheDataUtils.getSelectPsiClass());
@@ -305,6 +350,7 @@ public class SelectSavePath extends DialogWrapper {
         tableInfo.setSavePath(savePath);
         tableInfo.setSavePackageName(packageField.getText());
         tableInfo.setPreName(preField.getText());
+        tableInfo.setChildPackageName(childPackageField.getText());
         tableInfo.setTemplateGroupName(templateSelectComponent.getselectedGroupName());
         Module module = getSelectModule();
         if (module != null) {
@@ -325,7 +371,7 @@ public class SelectSavePath extends DialogWrapper {
         this.templateSelectComponent = new TemplateSelectComponent();
         templatePanel.add(this.templateSelectComponent.getMainPanel(), BorderLayout.CENTER);
 
-        //初始化Module选择
+        // 初始化Module选择
         for (Module module : this.moduleList) {
             moduleComboBox.addItem(module.getName());
         }
@@ -395,5 +441,17 @@ public class SelectSavePath extends DialogWrapper {
             path += "/" + packageName.replace(".", "/");
         }
         pathField.setText(path);
+    }
+
+    public void setChildPackageField(JTextField childPackageField) {
+        this.childPackageField = childPackageField;
+    }
+
+    public JButton getChildPackageChooseButton() {
+        return childPackageChooseButton;
+    }
+
+    public void setChildPackageChooseButton(JButton childPackageChooseButton) {
+        this.childPackageChooseButton = childPackageChooseButton;
     }
 }
